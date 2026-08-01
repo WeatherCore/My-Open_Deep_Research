@@ -34,8 +34,10 @@ from open_deep_research.prompts import summarize_webpage_prompt
 from open_deep_research.state import ResearchComplete, Summary
 
 ##########################
-# Tavily Search Tool Utils
+# Tavily Search Tool Utils tavily_search 联网搜索工具
+# 研究员调用这个工具 → 执行联网检索、网页抓取、网页摘要、结果格式化，最终把整理好的资料返回给研究员 LLM
 ##########################
+# LLM 看的“说明书”
 TAVILY_SEARCH_DESCRIPTION = (
     "A search engine optimized for comprehensive, accurate, and trusted results. "
     "Useful for when you need to answer questions about current events."
@@ -43,11 +45,15 @@ TAVILY_SEARCH_DESCRIPTION = (
 @tool(description=TAVILY_SEARCH_DESCRIPTION)
 async def tavily_search(
     queries: List[str],
+    # 支持一次传入多个搜索词批量查询
     max_results: Annotated[int, InjectedToolArg] = 5,
     topic: Annotated[Literal["general", "news", "finance"], InjectedToolArg] = "general",
     config: RunnableConfig = None
 ) -> str:
     """Fetch and summarize search results from Tavily search API.
+
+    # queries：由 LLM 生成。LLM 看到用户问题“帮我查量子计算和 AI 的结合”，会主动把这个字段填成 ["量子计算 AI 结合", "quantum computing AI"]。
+    # max_results 和 topic：被 InjectedToolArg 标记，由代码底层自动注入，意味着 LLM 看不见这两个参数，也不会费力去填它们。它们的值来自：函数定义里的默认值（5 和 "general"），或者当你调用 agent.invoke(..., config={"configurable": {"max_results": 10}}) 时，被运行时注入
 
     Args:
         queries: List of search queries to execute
@@ -59,15 +65,19 @@ async def tavily_search(
         Formatted string containing summarized search results
     """
     # Step 1: Execute search queries asynchronously
+    # tavily_search_async：底层封装的 Tavily 异步 API 请求
+    # 为什么是异步（async）：因为搜索要请求外部 API（网络 IO），如果同步执行，程序会卡住等网络响应。异步允许程序在等待网络时处理其他事情
     search_results = await tavily_search_async(
         queries,
         max_results=max_results,
         topic=topic,
-        include_raw_content=True,
+        include_raw_content=True, # 最重要：开启网页正文抓取；如果关闭，只能拿到简短预览摘要，无法深度调研
         config=config
     )
     
     # Step 2: Deduplicate results by URL to avoid processing the same content multiple times
+    # URL 去重（工程关键优化点）
+    # 同一个网页可能被多个 query 同时搜出来。不去重会造成：重复抓取、重复摘要、浪费 token、大量冗余信息。使用 URL 作为唯一 key 进行全局去重
     unique_results = {}
     for response in search_results:
         for result in response['results']:
@@ -76,30 +86,30 @@ async def tavily_search(
                 unique_results[url] = {**result, "query": response['query']}
     
     # Step 3: Set up the summarization model with configuration
+    # 从运行时配置读取参数，所有模型参数在顶层统一管控，不用硬编码
     configurable = Configuration.from_runnable_config(config)
-    
-    # Character limit to stay within model token limits (configurable)
     max_char_to_include = configurable.max_content_length
-    
-    # Initialize summarization model with retry logic
     model_api_key = get_api_key_for_model(configurable.summarization_model, config)
     summarization_model = init_chat_model(
         model=configurable.summarization_model,
         max_tokens=configurable.summarization_model_max_tokens,
         api_key=model_api_key,
-        tags=["langsmith:nostream"]
+        tags=["langsmith:nostream"] # LangSmith 追踪标签，标记该次模型调用不需要流式输出，用于日志调试区分
     ).with_structured_output(Summary).with_retry(
         stop_after_attempt=configurable.max_structured_output_retries
     )
     
     # Step 4: Create summarization tasks (skip empty content)
+    # noop = no operation，空操作异步函数：如果某个网页抓取失败，没有 raw_content，那就跳过总结，在 summarized_results 里用这个空任务填充列表（搜索 API 返回的摘要片段）兜底，而不是让整个程序崩溃
     async def noop():
         """No-op function for results without raw content."""
         return None
-    
+
+    # 它是一个任务清单，列表里每一项是「将来要执行的摘要任务」，但是还没有真正运行
     summarization_tasks = [
         noop() if not result.get("raw_content") 
-        else summarize_webpage(
+        else summarize_webpage( 
+            # 存在网页原文 raw_content，启动摘要任务 summarize_webpage(网页截断后的文本)
             summarization_model, 
             result['raw_content'][:max_char_to_include]
         )

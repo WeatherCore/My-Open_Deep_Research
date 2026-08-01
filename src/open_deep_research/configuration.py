@@ -250,7 +250,7 @@ class Configuration(BaseModel):
         }
     )
 
-    # 专门用来从 LangGraph 的 RunnableConfig + 环境变量，组装出我们的 Configuration 实例
+    # 专门用来从 LangGraph 的运行时配置 RunnableConfig + 环境变量，组装出我们的 Configuration 实例项目预设参数（网页最大截取长度、摘要模型名称、重试次数等）
     # @classmethod 指定这个是类方法，可以不实例化直接调用
     @classmethod
     def from_runnable_config(
