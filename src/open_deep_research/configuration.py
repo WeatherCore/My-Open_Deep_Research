@@ -250,6 +250,7 @@ class Configuration(BaseModel):
         }
     )
 
+    # 专门用来从 LangGraph 的 RunnableConfig + 环境变量，组装出我们的 Configuration 实例
     # @classmethod 指定这个是类方法，可以不实例化直接调用
     @classmethod
     def from_runnable_config(

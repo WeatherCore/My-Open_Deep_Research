@@ -1,5 +1,8 @@
 """System prompts and prompt templates for the Deep Research agent."""
 
+#  这份提示词是用户刚发起调研需求，Agent 先判断需求清不清晰，模糊就主动提问（HITL 人在回路）的，搭配之前 state.py 的 ClarifyWithUser 结构化输出模型一起使用
+# {messages}：运行时注入对话历史（来自 AgentState 里面的 messages），让模型看见用户原始诉求、过往问答
+#{date}：注入当前日期，防止模型使用过时知识、区分时效性调研需求
 clarify_with_user_instructions="""
 These are the messages that have been exchanged so far from the user asking for the report:
 <Messages>
@@ -40,7 +43,10 @@ For the verification message when no clarification is needed:
 - Keep the message concise and professional
 """
 
-
+# 定位：澄清节点执行完毕之后的主题提炼节点专用系统提示词
+# 作用：把零散的对话历史，整理成一份严谨、详细、可供主管 Agent 开展多轮调研的正式调研主题
+# {messages}：完整对话上下文（用户原始需求 + 澄清阶段问答）
+# {date}：注入当前日期，约束时效性调研（例如 “2026 最新政策”）
 transform_messages_into_research_topic_prompt = """You will be given a set of messages that have been exchanged so far between yourself and the user. 
 Your job is to translate these messages into a more detailed and concrete research question that will be used to guide the research.
 
@@ -76,6 +82,7 @@ Guidelines:
 - If the query is in a specific language, prioritize sources published in that language.
 """
 
+# 主管 Supervisor（研究负责人）专用系统提示词
 lead_researcher_prompt = """You are a research supervisor. Your job is to conduct research by calling the "ConductResearch" tool. For context, today's date is {date}.
 
 <Task>
@@ -135,6 +142,7 @@ After each ConductResearch tool call, use think_tool to analyze the results:
 - Do NOT use acronyms or abbreviations in your research questions, be very clear and specific
 </Scaling Rules>"""
 
+# 单个并行研究员子 Agent 的系统提示词
 research_system_prompt = """You are a research assistant conducting research on the user's input topic. For context, today's date is {date}.
 
 <Task>
@@ -182,7 +190,7 @@ After each search tool call, use think_tool to analyze the results:
 </Show Your Thinking>
 """
 
-
+# 多研究员结果汇总压缩专用提示词
 compress_research_system_prompt = """You are a research assistant that has conducted research on a topic by calling several tools and web searches. Your job is now to clean up the findings, but preserve all of the relevant statements and information that the researcher has gathered. For context, today's date is {date}.
 
 <Task>
@@ -221,10 +229,12 @@ The report should be structured like this:
 Critical Reminder: It is extremely important that any information that is even remotely relevant to the user's research topic is preserved verbatim (e.g. don't rewrite it, don't summarize it, don't paraphrase it).
 """
 
+# 发给「结果压缩模型」的 HumanMessage（人类消息），搭配前面超长的 compress_research_system_prompt（SystemMessage）成对使用
 compress_research_simple_human_message = """All above messages are about research conducted by an AI Researcher. Please clean up these findings.
 
 DO NOT summarize the information. I want the raw information returned, just in a cleaner format. Make sure all relevant information is preserved - you can rewrite findings verbatim."""
 
+# 调研流程全部结束后，最终报告生成节点专用系统提示词
 final_report_generation_prompt = """Based on all the research conducted, create a comprehensive, well-structured answer to the overall research brief:
 <Research Brief>
 {research_brief}
@@ -307,7 +317,7 @@ Format the report in clear markdown with proper structure and include source ref
 </Citation Rules>
 """
 
-
+# 研究员抓取网页正文之后，网页摘要专用系统提示词
 summarize_webpage_prompt = """You are tasked with summarizing the raw content of a webpage retrieved from a web search. Your goal is to create a summary that preserves the most important information from the original web page. This summary will be used by a downstream research agent, so it's crucial to maintain the key details without losing essential information.
 
 Here is the raw content of the webpage:
