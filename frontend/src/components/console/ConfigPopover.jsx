@@ -143,6 +143,72 @@ export default function ConfigPopover({ open, config, setConfig }) {
           />
         </Field>
 
+        <Field label="压缩模型" hint="compression_model">
+          <input
+            className={inputCls}
+            value={config.compression_model}
+            onChange={(e) => set("compression_model", e.target.value)}
+            placeholder="deepseek:deepseek-chat"
+          />
+        </Field>
+
+        <Field label="报告模型" hint="final_report_model">
+          <input
+            className={inputCls}
+            value={config.final_report_model}
+            onChange={(e) => set("final_report_model", e.target.value)}
+            placeholder="deepseek:deepseek-chat"
+          />
+        </Field>
+
+        <Field label="摘要输出上限" hint={`${config.summarization_model_max_tokens ?? 8192} tok`}>
+          <input
+            type="range"
+            min="500"
+            max="8192"
+            step="256"
+            value={config.summarization_model_max_tokens ?? 8192}
+            onChange={(e) => set("summarization_model_max_tokens", Number(e.target.value))}
+            className="w-full accent-[var(--accent)]"
+          />
+        </Field>
+
+        <Field label="研究输出上限" hint={`${config.research_model_max_tokens ?? 10000} tok`}>
+          <input
+            type="range"
+            min="1024"
+            max="10000"
+            step="512"
+            value={config.research_model_max_tokens ?? 10000}
+            onChange={(e) => set("research_model_max_tokens", Number(e.target.value))}
+            className="w-full accent-[var(--accent)]"
+          />
+        </Field>
+
+        <Field label="压缩输出上限" hint={`${config.compression_model_max_tokens ?? 8192} tok`}>
+          <input
+            type="range"
+            min="500"
+            max="8192"
+            step="256"
+            value={config.compression_model_max_tokens ?? 8192}
+            onChange={(e) => set("compression_model_max_tokens", Number(e.target.value))}
+            className="w-full accent-[var(--accent)]"
+          />
+        </Field>
+
+        <Field label="报告输出上限" hint={`${config.final_report_model_max_tokens ?? 10000} tok`}>
+          <input
+            type="range"
+            min="1024"
+            max="10000"
+            step="512"
+            value={config.final_report_model_max_tokens ?? 10000}
+            onChange={(e) => set("final_report_model_max_tokens", Number(e.target.value))}
+            className="w-full accent-[var(--accent)]"
+          />
+        </Field>
+
       </div>
     </div>
   );
