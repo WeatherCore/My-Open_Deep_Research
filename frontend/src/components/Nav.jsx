@@ -29,11 +29,10 @@ export default function Nav({ view, setView, dark, toggleTheme }) {
             <button
               key={v.id}
               onClick={() => setView(v.id)}
-              className={`relative rounded-lg px-3 py-1.5 text-[13.5px] outline-none transition-colors ${
-                view === v.id
+              className={`relative rounded-lg px-3 py-1.5 text-[13.5px] outline-none transition-colors ${view === v.id
                   ? "text-tx"
                   : "text-mut hover:text-tx"
-              }`}
+                }`}
             >
               {view === v.id && (
                 <motion.span
@@ -49,7 +48,7 @@ export default function Nav({ view, setView, dark, toggleTheme }) {
 
         <div className="ml-auto flex items-center gap-1.5">
           <a
-            href="https://github.com/langchain-ai/open_deep_research"
+            href="https://github.com/WeatherCore/My-Open-Deep-Research"
             target="_blank"
             rel="noreferrer"
             className="hidden items-center gap-1 rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[13px] text-mut transition-colors hover:border-line2 hover:text-tx md:flex"
