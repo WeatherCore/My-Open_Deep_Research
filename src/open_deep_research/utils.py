@@ -1114,7 +1114,7 @@ def get_api_key_for_model(model_name: str, config: RunnableConfig):
             return api_keys.get("OPENAI_API_KEY")
         elif model_name.startswith("anthropic:"):
             return api_keys.get("ANTHROPIC_API_KEY")
-        elif model_name.startswith("google"):
+        elif model_name.startswith("google") or model_name.startswith("gemini:"):
             return api_keys.get("GOOGLE_API_KEY")
         elif model_name.startswith("dashscope:"):
             return api_keys.get("DASHSCOPE_API_KEY")
@@ -1128,7 +1128,7 @@ def get_api_key_for_model(model_name: str, config: RunnableConfig):
             return os.getenv("OPENAI_API_KEY")
         elif model_name.startswith("anthropic:"):
             return os.getenv("ANTHROPIC_API_KEY")
-        elif model_name.startswith("google"):
+        elif model_name.startswith("google") or model_name.startswith("gemini:"):
             return os.getenv("GOOGLE_API_KEY")
         elif model_name.startswith("dashscope:"):
             return os.getenv("DASHSCOPE_API_KEY")
