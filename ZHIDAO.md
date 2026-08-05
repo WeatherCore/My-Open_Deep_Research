@@ -278,7 +278,23 @@ open_deep_research/
    ```
 
 2. **然后按流程顺序读每个节点函数**：
-   - `clarify_with_user` → `write_research_brief` → `supervisor` → `supervisor_tools` → `researcher` → `researcher_tools` → `compress_research` → `final_report_generation`
+    主图 START
+        ↓
+    clarify_with_user  用户澄清（Command动态跳转至下一站）
+        ↓
+    write_research_brief 生成调研纲要
+        ↓
+    research_supervisor【主管子图 supervisor_subgraph】
+        ├─ 拆分多个子调研主题
+        ├─ 并发启动 N 个【研究员子图 researcher_subgraph】
+        │    ├─ researcher（思考生成工具调用）
+        │    ├─ researcher_tools（执行搜索，Command实现React循环）
+        │    └─ compress_research（压缩输出compressed_research）→ 子图END
+        └─ 收集全部研究员结果，写入主state notes
+        ↓  主管子图END，回到主图
+    final_report_generation 汇总notes，生成最终报告，处理token截断重试
+        ↓
+    主图 END
 
 **核心函数说明**：
 
@@ -389,26 +405,7 @@ values = {
 }
 ```
 
-### 7.2 如何切换模型
-
-在 `.env` 文件中设置，或通过 LangGraph Studio UI 修改：
-
-```bash
-# 示例：使用 Anthropic 的模型
-RESEARCH_MODEL=anthropic:claude-sonnet-4-20250514
-COMPRESSION_MODEL=anthropic:claude-sonnet-4-20250514
-FINAL_REPORT_MODEL=anthropic:claude-sonnet-4-20250514
-```
-
-模型字符串格式为 `provider:model_name`，支持的 provider 包括：
-- `openai:` — OpenAI 系列
-- `anthropic:` — Anthropic 系列
-- `google:` — Google Gemini 系列
-- `groq:` — Groq 系列
-- `ollama:` — 本地 Ollama 模型
-- `bedrock:` — AWS Bedrock
-
-### 7.3 如何配置搜索 API
+### 7.2 如何配置搜索 API
 
 ```bash
 # 使用 Tavily（默认，需要 TAVILY_API_KEY）
@@ -432,8 +429,8 @@ SEARCH_API=none
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/langchain-ai/open_deep_research.git
-cd open_deep_research
+git clone https://github.com/WeatherCore/My-Open_Deep_Research.git
+cd My-Open_Deep_Research
 
 # 2. 创建虚拟环境
 uv venv
@@ -445,7 +442,7 @@ uv sync
 # 4. 配置环境变量
 cp .env.example .env
 # 编辑 .env，至少填入：
-# - OPENAI_API_KEY（如果使用 OpenAI 模型）
+# - DEEPSEEK_API_KEY（如果使用 DEEPSEEK 模型）
 # - TAVILY_API_KEY（如果使用 Tavily 搜索）
 ```
 
@@ -547,7 +544,7 @@ GOOGLE_API_KEY=xxx             # Google 模型密钥
 
 ### Q: `langgraph.json` 是做什么的？
 
-它告诉 LangGraph CLI 主图的入口点在哪里：
+这是 LangGraph Cloud / LangGraph Studio 的项目配置文件，不是 Python 代码，是 JSON 配置，专门给 LangGraph 工具链读取，它告诉 LangGraph CLI 主图的入口点在哪里：
 ```json
 {
   "graphs": {
