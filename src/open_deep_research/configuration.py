@@ -130,11 +130,11 @@ class Configuration(BaseModel):
     )
     # 网页原始内容摘要模型
     summarization_model: str = Field(
-        default="openai:gpt-4.1-mini",
+        default="deepseek:deepseek-chat",
         metadata={
             "x_oap_ui_config": {
                 "type": "text",
-                "default": "openai:gpt-4.1-mini",
+                "default": "deepseek:deepseek-chat",
                 "description": "Model for summarizing research results from Tavily search results"
             }
         }
@@ -165,11 +165,11 @@ class Configuration(BaseModel):
     )
     # 研究员主体模型，每个并行研究员 Agent 自身使用的大模型
     research_model: str = Field(
-        default="openai:gpt-4.1",
+        default="deepseek:deepseek-chat",
         metadata={
             "x_oap_ui_config": {
                 "type": "text",
-                "default": "openai:gpt-4.1",
+                "default": "deepseek:deepseek-chat",
                 "description": "Model for conducting research. NOTE: Make sure your Researcher Model supports the selected search API."
             }
         }
@@ -186,11 +186,11 @@ class Configuration(BaseModel):
     )
     # 多研究员的结果汇总压缩模型
     compression_model: str = Field(
-        default="openai:gpt-4.1",
+        default="deepseek:deepseek-chat",
         metadata={
             "x_oap_ui_config": {
                 "type": "text",
-                "default": "openai:gpt-4.1",
+                "default": "deepseek:deepseek-chat",
                 "description": "Model for compressing research findings from sub-agents. NOTE: Make sure your Compression Model supports the selected search API."
             }
         }
@@ -207,11 +207,11 @@ class Configuration(BaseModel):
     )
     # 最终报告生成模型
     final_report_model: str = Field(
-        default="openai:gpt-4.1",
+        default="deepseek:deepseek-chat",
         metadata={
             "x_oap_ui_config": {
                 "type": "text",
-                "default": "openai:gpt-4.1",
+                "default": "deepseek:deepseek-chat",
                 "description": "Model for writing the final report from all research findings"
             }
         }
