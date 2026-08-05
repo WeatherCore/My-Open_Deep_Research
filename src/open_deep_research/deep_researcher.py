@@ -118,7 +118,7 @@ async def clarify_with_user(state: AgentState, config: RunnableConfig) -> Comman
     if response.need_clarification:
         return Command(
             goto=END, 
-            update={"messages": [AIMessage(content=response.question)]}
+            update={"messages": [AIMessage(content=response.question, name="clarify_question")]}
         )
     # 说"不用" → 需求足够清晰，直接前往 write_research_brief，附带一句确认话术存入消息历史
     else:
