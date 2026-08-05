@@ -748,7 +748,7 @@ async def final_report_generation(state: AgentState, config: RunnableConfig):
     current_retry = 0
     findings_token_limit = None
     
-    while current_retry <= max_retries:
+    while current_retry < max_retries:
         try:
             # 组装报告提示词，输入包含四块内容：研究简报、研究员对话记录、提炼后的笔记、当前日期
             final_report_prompt = final_report_generation_prompt.format(
