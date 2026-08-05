@@ -33,6 +33,13 @@ from open_deep_research.configuration import Configuration, SearchAPI
 from open_deep_research.prompts import summarize_webpage_prompt
 from open_deep_research.state import ResearchComplete, Summary
 
+# 模块级缓存：记录本进程内已经精读并摘要过的 URL，实现「跨搜索调用去重」。
+# 同一个网页在不同轮次 / 不同研究员之间会被反复搜出来，如果每次都重新抓取原文 + 重新摘要，
+# 就是反复计费。这里让同一个 URL 只精读一次，后续轮次直接跳过。
+# 注意：langgraph dev 是单进程常驻，缓存会跨多次研究共享；进程重启后自然清空。
+_SEEN_URLS: set = set()
+_MAX_SEEN_URLS = 3000
+
 ##########################
 # Tavily Search Tool Utils tavily_search 联网搜索工具
 
@@ -75,19 +82,25 @@ async def tavily_search(
     )
     
     # URL 去重（工程关键优化点）
-    # 同一个网页可能被多个 query 同时搜出来。不去重会造成：重复抓取、重复摘要、浪费 token、大量冗余信息。使用 URL 作为唯一 key 进行全局去重，同时把这条结果对应的搜索 query 一并存入，记录这条信息来自哪个检索词
+    # 同一个网页可能被多个 query 同时搜出来。不去重会造成：重复抓取、重复摘要、浪费 token、大量冗余信息。
+    # 第 1 层：本次调用内去重（URL 作为唯一 key）；第 2 层：跨调用去重（_SEEN_URLS 模块级缓存，
+    # 已被之前任何一轮 / 任何研究员精读过的 URL 直接跳过，避免同一网页反复抓取 + 反复摘要计费）
     unique_results = {}
     for response in search_results:
         # response['results'] 是 Tavily 返回的字典，包含 title、url、content、raw_content(正文)等字段
         for result in response['results']:
             url = result['url']
-            if url not in unique_results:
-                unique_results[url] = {**result, "query": response['query']}
-                # 效果:
-                # unique_results = {
-                #     "url_1": {"title": "...", "url": "...", "content": "...", "raw_content": "...", "query": "量子计算"},
-                #     "url_2": {"title": "...", "url": "...", "content": "...", "raw_content": "...", "query": "量子计算"}
-                # }
+            if url in _SEEN_URLS:
+                continue  # 之前已精读摘要过，跳过
+            if len(_SEEN_URLS) >= _MAX_SEEN_URLS:
+                _SEEN_URLS.clear()  # 缓存过大时整体清空兜底
+            _SEEN_URLS.add(url)
+            unique_results[url] = {**result, "query": response['query']}
+            # 效果:
+            # unique_results = {
+            #     "url_1": {"title": "...", "url": "...", "content": "...", "raw_content": "...", "query": "量子计算"},
+            #     "url_2": {"title": "...", "url": "...", "content": "...", "raw_content": "...", "query": "量子计算"}
+            # }
     
     # 从运行时配置读取参数，所有模型参数在顶层统一管控，不用硬编码
     configurable = Configuration.from_runnable_config(config)
