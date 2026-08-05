@@ -718,9 +718,23 @@ async def get_all_tools(config: RunnableConfig):
 
 # get_notes_from_tool_calls：事后从对话历史里，把工具执行后吐出来的“笔记”全部抽出来
 def get_notes_from_tool_calls(messages: list[MessageLikeRepresentation]):
-    """Extract notes from tool call messages."""
+    """Extract notes from tool call messages, excluding reflections and error placeholders."""
+    error_markers = (
+        "Error: Did not run this research",
+        "Error synthesizing research report",
+        "Error running research",
+    )
+    notes = []
+    for tool_msg in filter_messages(messages, include_types="tool"):
+        name = getattr(tool_msg, "name", "") or ""
+        content = str(tool_msg.content or "")
+        if name == "think_tool":
+            continue  # 反思文本不进入报告素材
+        if content.startswith(error_markers):
+            continue  # 错误占位符不进入报告素材
+        notes.append(content)
+    return notes
 
-    return [tool_msg.content for tool_msg in filter_messages(messages, include_types="tool")]
 
 ##########################
 # Model Provider Native Websearch Utils
