@@ -256,6 +256,7 @@ export async function startLiveRun({ baseUrl, assistantId, input, configurable, 
       if (
         last &&
         (last.type === "ai" || last.role === "ai") &&
+        last.name === "clarify_question" &&
         last.content &&
         !briefEmitted &&
         !questionEmitted
