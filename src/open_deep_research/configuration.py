@@ -41,7 +41,7 @@ class MCPConfig(BaseModel):
     """Whether the MCP server requires authentication"""
      # 访问远程服务是否需要鉴权
 
- # 整个项目所有节点共享的静态参数，图一旦启动，全程不会变更
+# 整个项目所有节点共享的静态参数，图一旦启动，全程不会变更
 class Configuration(BaseModel):
     """Main configuration class for the Deep Research agent."""
     
@@ -250,7 +250,7 @@ class Configuration(BaseModel):
         }
     )
 
-    # 专门用来从 LangGraph 的运行时配置 RunnableConfig + 环境变量，组装出我们的 Configuration 实例项目预设参数（网页最大截取长度、摘要模型名称、重试次数等）
+    # 专门用来从 RunnableConfig（LangGraph 运行时配置） + 系统环境变量，自动组装出完整 Configuration 对象也就是第45行定义的那个项目预设参数（网页最大截取长度、摘要模型名称、重试次数等）
     # @classmethod 指定这个是类方法，可以不实例化直接调用
     @classmethod
     def from_runnable_config(
@@ -285,16 +285,19 @@ class Configuration(BaseModel):
 
 
 # config = {
-#     "configurable": {"thread_id": "limit_demo"}, # 限制thread_id 线程ID
-#     "recursion_limit": 3 # 最多 3 次迭代，或使用中间件进行精确跟踪和终止循环
-# }
-
-# {
 #     "configurable": {
-#         "max_researcher_iterations": 6,
+#         # ========== 【业务静态配置】从Configuration.from_runnable_config读取
+#         "thread_id": "local-test-01",
 #         "search_api": "tavily",
-#         ...
+#         "max_researcher_iterations": 6,
+#         "model": "deepseek:deepseek-chat",
+#         "mcp_config": {"url": "http://xxx", "tools": []},
+#
+#         # ========== 【动态运行时参数】和MCP鉴权相关（你刚看的代码）
+#         "x-supabase-access-token": "sb_xxxx",  # supabase登录凭证
+#         "thread_id": "test-thread-final",      # 对话线程ID（checkpointer记忆依靠这个）
 #     },
-#     "thread_id": "xxx",
-#     ...
+#     "metadata": {
+#         "owner": "user_123"  # 当前操作用户ID！【重点】用来隔离token存储
+#     }
 # }
