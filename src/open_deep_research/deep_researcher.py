@@ -673,8 +673,9 @@ async def compress_research(state: ResearcherState, config: RunnableConfig):
                 researcher_messages = remove_up_to_last_ai_message(researcher_messages)
                 continue
             
-            # For other errors, continue retrying
-            continue
+            # 非 token 超限错误（限流/网络/密钥）：不盲目重试烧钱，走兜底
+            logger.warning("Compression failed with non-token error: %s", e)
+            break
     
     # 如果 3 次重试都失败了（不管是 Token 超限裁了也救不回来，还是网络错误），绝不抛异常中断程序，而是返回一个带错误信息的 compressed_research，以及能救多少就救多少的 raw_notes 原始素材
     raw_notes_content = "\n".join([
