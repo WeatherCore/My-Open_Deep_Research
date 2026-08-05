@@ -55,22 +55,19 @@ export default function ConfigPopover({ open, config, setConfig }) {
         <Field label="允许澄清提问" hint="allow_clarification">
           <button
             onClick={() => set("allow_clarification", !config.allow_clarification)}
-            className={`flex w-full items-center justify-between rounded-lg border px-2.5 py-1.5 text-[13px] transition-colors ${
-              config.allow_clarification
-                ? "border-accent/50 bg-accent-soft text-tx"
-                : "border-line text-mut"
-            }`}
+            className={`flex w-full items-center justify-between rounded-lg border px-2.5 py-1.5 text-[13px] transition-colors ${config.allow_clarification
+              ? "border-accent/50 bg-accent-soft text-tx"
+              : "border-line text-mut"
+              }`}
           >
             {config.allow_clarification ? "开启" : "关闭"}
             <span
-              className={`h-4 w-7 rounded-full p-0.5 transition-colors ${
-                config.allow_clarification ? "bg-accent" : "bg-line2"
-              }`}
+              className={`h-4 w-7 rounded-full p-0.5 transition-colors ${config.allow_clarification ? "bg-accent" : "bg-line2"
+                }`}
             >
               <span
-                className={`block h-3 w-3 rounded-full bg-surface transition-transform ${
-                  config.allow_clarification ? "translate-x-3" : ""
-                }`}
+                className={`block h-3 w-3 rounded-full bg-surface transition-transform ${config.allow_clarification ? "translate-x-3" : ""
+                  }`}
               />
             </span>
           </button>
@@ -124,6 +121,28 @@ export default function ConfigPopover({ open, config, setConfig }) {
             placeholder="openai:gpt-4.1"
           />
         </Field>
+
+        <Field label="摘要模型" hint="summarization_model">
+          <input
+            className={inputCls}
+            value={config.summarization_model}
+            onChange={(e) => set("summarization_model", e.target.value)}
+            placeholder="deepseek:deepseek-chat"
+          />
+        </Field>
+
+        <Field label="内容长度上限" hint={`${config.max_content_length ?? 50000} 字符`}>
+          <input
+            type="range"
+            min="3000"
+            max="50000"
+            step="1000"
+            value={config.max_content_length ?? 50000}
+            onChange={(e) => set("max_content_length", Number(e.target.value))}
+            className="w-full accent-[var(--accent)]"
+          />
+        </Field>
+
       </div>
     </div>
   );

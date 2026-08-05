@@ -181,7 +181,7 @@ export async function startLiveRun({ baseUrl, assistantId, input, configurable, 
         emit({
           t: "log",
           at: nowStamp(),
-          actor: lastStage === "researcher" ? "researcher" : "researcher",
+          actor: "researcher",
           tag: "web_search",
           msg: argStr ? `查询：${argStr}` : "发起搜索",
         });
