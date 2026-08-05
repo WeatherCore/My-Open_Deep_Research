@@ -20,7 +20,7 @@ function useTheme() {
       document.documentElement.classList.toggle("dark", next);
       try {
         localStorage.setItem("odr-theme", next ? "dark" : "light");
-      } catch {}
+      } catch { }
       return next;
     });
   }, []);
@@ -104,7 +104,7 @@ export default function App() {
               <p className="text-[12px] font-semibold text-faint">链接</p>
               <div className="flex flex-col gap-1.5">
                 <a
-                  href="https://github.com/langchain-ai/open_deep_research"
+                  href="https://github.com/WeatherCore/My-Open-Deep-Research"
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-1.5 text-[13px] text-mut transition-colors hover:text-tx"
