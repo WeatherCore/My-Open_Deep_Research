@@ -55,7 +55,8 @@ cp .env.example .env
 
 ```bash
 # 安装依赖并启动 LangGraph 服务器
-uvx --refresh --from "langgraph-cli[inmem]" --with-editable . --python 3.11 langgraph dev --allow-blocking
+$env:PYTHONUTF8=1; 
+.venv\Scripts\langgraph dev --allow-blocking
 ```
 
 这将在浏览器中打开 LangGraph Studio 界面：
@@ -68,16 +69,46 @@ uvx --refresh --from "langgraph-cli[inmem]" --with-editable . --python 3.11 lang
 
 在 `messages` 输入框中提问，然后点击 `Submit`（提交）。在 "Manage Assistants"（管理助手）标签页中选择不同的配置。
 
+### 💻 前端控制台（Web UI）
+
+项目自带一个 React + Vite 编写的 Web 控制台（`frontend/`），提供比 LangGraph Studio 更直观的中文界面：输入研究问题后，实时流式展示「澄清 → 简报 → 主管调度 → 并行研究 → 报告生成」的全过程，并支持模型、搜索方式、并发数等运行配置。
+
+前置条件：Node.js（>= 18）。
+
+```bash
+# 1. 先启动后端（见上方"快速开始"）
+.venv\Scripts\langgraph dev --allow-blocking
+
+# 2. 新开一个终端，启动前端
+cd frontend
+npm install    # 首次运行需要
+npm run dev
+```
+
+启动后在浏览器打开 **http://127.0.0.1:5173**：
+
+- 切到「直连后端」模式（默认后端地址 `http://127.0.0.1:2024`），点击「检测连接」确认后端可达
+- 输入研究问题，点击「开始深度研究」，实时观察多智能体运行进度与最终报告
+- 「运行配置」面板可调整模型、搜索方式、并发数等，与 `configuration.py` 保持一致
+- 无需后端时也可使用「演示模式」，内置模拟运行数据
+
+生产构建（输出到 `frontend/dist/`）：
+
+```bash
+cd frontend
+npm run build
+```
+
 ## 🧠 工作原理
 
 ### 核心概念
 
-| 概念 | 说明 |
-|------|------|
-| **LangGraph** | 工作流编排框架，把 Agent 流程建模为"有向图"：**节点（Node）** 是函数（如"搜索""压缩""生成报告"），**边（Edge）** 定义执行顺序，**状态（State）** 在节点间传递共享数据 |
-| **Agent** | Agent = LLM + 工具（Tools）。LLM 决定调用哪个工具、传什么参数，工具执行后把结果返回给 LLM，LLM 再决定下一步（**ReAct 模式**） |
-| **MCP** | Model Context Protocol，让 Agent 连接外部工具和服务的标准协议，例如数据库、API 等 |
-| **子图（Subgraph）** | 本项目采用嵌套图设计：主图之下有主管子图与研究员子图，各层职责分离、状态独立 |
+| 概念                 | 说明                                                                                                                                                                  |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **LangGraph**        | 工作流编排框架，把 Agent 流程建模为"有向图"：**节点（Node）** 是函数（如"搜索""压缩""生成报告"），**边（Edge）** 定义执行顺序，**状态（State）** 在节点间传递共享数据 |
+| **Agent**            | Agent = LLM + 工具（Tools）。LLM 决定调用哪个工具、传什么参数，工具执行后把结果返回给 LLM，LLM 再决定下一步（**ReAct 模式**）                                         |
+| **MCP**              | Model Context Protocol，让 Agent 连接外部工具和服务的标准协议，例如数据库、API 等                                                                                     |
+| **子图（Subgraph）** | 本项目采用嵌套图设计：主图之下有主管子图与研究员子图，各层职责分离、状态独立                                                                                          |
 
 ### 运行流程
 
@@ -154,12 +185,12 @@ open_deep_research/
 
 Open Deep Research 通过 [init_chat_model() API](https://python.langchain.com/docs/how_to/chat_models_universal_init/) 支持多种 LLM 提供商，不同任务使用不同模型（详见 [configuration.py](src/open_deep_research/configuration.py)）：
 
-| 模型字段 | 默认值 | 用途 |
-|---------|--------|------|
+| 模型字段              | 默认值                | 用途                    |
+| --------------------- | --------------------- | ----------------------- |
 | `summarization_model` | `openai:gpt-4.1-mini` | 对搜索 API 结果进行摘要 |
-| `research_model` | `openai:gpt-4.1` | 驱动搜索 Agent |
-| `compression_model` | `openai:gpt-4.1` | 压缩研究发现 |
-| `final_report_model` | `openai:gpt-4.1` | 撰写最终报告 |
+| `research_model`      | `openai:gpt-4.1`      | 驱动搜索 Agent          |
+| `compression_model`   | `openai:gpt-4.1`      | 压缩研究发现            |
+| `final_report_model`  | `openai:gpt-4.1`      | 撰写最终报告            |
 
 > 注意：所选模型需要支持[结构化输出（structured outputs）](https://python.langchain.com/docs/integrations/chat/)和[工具调用（tool calling）](https://python.langchain.com/docs/how_to/tool_calling/)。OpenRouter 用户请参考[此指南](https://github.com/langchain-ai/open_deep_research/issues/75#issuecomment-2811472408)；通过 Ollama 使用本地模型的用户请参考[设置说明](https://github.com/langchain-ai/open_deep_research/issues/65#issuecomment-2743586318)。
 
@@ -176,13 +207,13 @@ SEARCH_API=none         # 不使用搜索（仅 MCP）
 
 ### 其他常用配置
 
-| 配置项 | 默认值 | 说明 |
-|--------|--------|------|
-| `max_researcher_iterations` | 6 | 主管最大迭代次数 |
-| `max_react_tool_calls` | 10 | 研究员最大工具调用次数 |
-| `max_concurrent_research_units` | 5 | 最大并行研究员数 |
-| `max_content_length` | 50000 | 网页内容最大字符数 |
-| `mcp_config` | None | MCP 服务器配置 |
+| 配置项                          | 默认值 | 说明                   |
+| ------------------------------- | ------ | ---------------------- |
+| `max_researcher_iterations`     | 6      | 主管最大迭代次数       |
+| `max_react_tool_calls`          | 10     | 研究员最大工具调用次数 |
+| `max_concurrent_research_units` | 5      | 最大并行研究员数       |
+| `max_content_length`            | 50000  | 网页内容最大字符数     |
+| `mcp_config`                    | None   | MCP 服务器配置         |
 
 所有配置均可通过环境变量、LangGraph Studio 界面或直接修改 [configuration.py](src/open_deep_research/configuration.py) 完成。配置加载优先级：**环境变量 > 运行时配置（Studio UI）> 默认值**。
 
@@ -208,12 +239,12 @@ python tests/extract_langsmith_data.py --project-name "你的实验名称" --mod
 
 ### 评估结果
 
-| 名称 | 提交版本 | 摘要模型 | 研究模型 | 压缩模型 | 总成本 | 总 Token 数 | RACE 分数 | 实验链接 |
-|------|--------|---------------|----------|-------------|------------|--------------|------------|------------|
-| GPT-5 | [ca3951d](https://github.com/langchain-ai/open_deep_research/pull/168/commits) | openai:gpt-4.1-mini | openai:gpt-5 | openai:gpt-4.1 |  | 204,640,896 | 0.4943 | [链接](https://smith.langchain.com/o/ebbaf2eb-769b-4505-aca2-d11de10372a4/datasets/6e4766ca-613c-4bda-8bde-f64f0422bbf3/compare?selectedSessions=4d5941c8-69ce-4f3d-8b3e-e3c99dfbd4cc&baseline=undefined) |
-| 默认配置 | [6532a41](https://github.com/langchain-ai/open_deep_research/commit/6532a4176a93cc9bb2102b3d825dcefa560c85d9) | openai:gpt-4.1-mini | openai:gpt-4.1 | openai:gpt-4.1 | $45.98 | 58,015,332 | 0.4309 | [链接](https://smith.langchain.com/o/ebbaf2eb-769b-4505-aca2-d11de10372a4/datasets/6e4766ca-6[…]ons=cf4355d7-6347-47e2-a774-484f290e79bc&baseline=undefined) |
-| Claude Sonnet 4 | [f877ea9](https://github.com/langchain-ai/open_deep_research/pull/163/commits/f877ea93641680879c420ea991e998b47aab9bcc) | openai:gpt-4.1-mini | anthropic:claude-sonnet-4-20250514 | openai:gpt-4.1 | $187.09 | 138,917,050 | 0.4401 | [链接](https://smith.langchain.com/o/ebbaf2eb-769b-4505-aca2-d11de10372a4/datasets/6e4766ca-6[…]ons=04f6002d-6080-4759-bcf5-9a52e57449ea&baseline=undefined) |
-| Deep Research Bench 提交 | [c0a160b](https://github.com/langchain-ai/open_deep_research/commit/c0a160b57a9b5ecd4b8217c3811a14d8eff97f72) | openai:gpt-4.1-nano | openai:gpt-4.1 | openai:gpt-4.1 | $87.83 | 207,005,549 | 0.4344 | [链接](https://smith.langchain.com/o/ebbaf2eb-769b-4505-aca2-d11de10372a4/datasets/6e4766ca-6[…]ons=e6647f74-ad2f-4cb9-887e-acb38b5f73c0&baseline=undefined) |
+| 名称                     | 提交版本                                                                                                                | 摘要模型            | 研究模型                           | 压缩模型       | 总成本  | 总 Token 数 | RACE 分数 | 实验链接                                                                                                                                                                                                  |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------- | ------------------- | ---------------------------------- | -------------- | ------- | ----------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GPT-5                    | [ca3951d](https://github.com/langchain-ai/open_deep_research/pull/168/commits)                                          | openai:gpt-4.1-mini | openai:gpt-5                       | openai:gpt-4.1 |         | 204,640,896 | 0.4943    | [链接](https://smith.langchain.com/o/ebbaf2eb-769b-4505-aca2-d11de10372a4/datasets/6e4766ca-613c-4bda-8bde-f64f0422bbf3/compare?selectedSessions=4d5941c8-69ce-4f3d-8b3e-e3c99dfbd4cc&baseline=undefined) |
+| 默认配置                 | [6532a41](https://github.com/langchain-ai/open_deep_research/commit/6532a4176a93cc9bb2102b3d825dcefa560c85d9)           | openai:gpt-4.1-mini | openai:gpt-4.1                     | openai:gpt-4.1 | $45.98  | 58,015,332  | 0.4309    | [链接](https://smith.langchain.com/o/ebbaf2eb-769b-4505-aca2-d11de10372a4/datasets/6e4766ca-6[…]ons=cf4355d7-6347-47e2-a774-484f290e79bc&baseline=undefined)                                              |
+| Claude Sonnet 4          | [f877ea9](https://github.com/langchain-ai/open_deep_research/pull/163/commits/f877ea93641680879c420ea991e998b47aab9bcc) | openai:gpt-4.1-mini | anthropic:claude-sonnet-4-20250514 | openai:gpt-4.1 | $187.09 | 138,917,050 | 0.4401    | [链接](https://smith.langchain.com/o/ebbaf2eb-769b-4505-aca2-d11de10372a4/datasets/6e4766ca-6[…]ons=04f6002d-6080-4759-bcf5-9a52e57449ea&baseline=undefined)                                              |
+| Deep Research Bench 提交 | [c0a160b](https://github.com/langchain-ai/open_deep_research/commit/c0a160b57a9b5ecd4b8217c3811a14d8eff97f72)           | openai:gpt-4.1-nano | openai:gpt-4.1                     | openai:gpt-4.1 | $87.83  | 207,005,549 | 0.4344    | [链接](https://smith.langchain.com/o/ebbaf2eb-769b-4505-aca2-d11de10372a4/datasets/6e4766ca-6[…]ons=e6647f74-ad2f-4cb9-887e-acb38b5f73c0&baseline=undefined)                                              |
 
 ## 🚀 部署与使用
 
@@ -255,22 +286,22 @@ python tests/extract_langsmith_data.py --project-name "你的实验名称" --mod
 
 ### 复刻路线建议
 
-| 阶段 | 目标 | 要点 |
-|------|------|------|
+| 阶段             | 目标         | 要点                                                         |
+| ---------------- | ------------ | ------------------------------------------------------------ |
 | 阶段 1（1-2 天） | 最小可行版本 | 单 Agent + 单搜索工具，去掉主管层，直接研究员搜索 + 生成报告 |
-| 阶段 2（2-3 天） | 加入多 Agent | 主管子图 + 并行研究员 + think_tool |
-| 阶段 3（3-5 天） | 完善功能 | 用户澄清流程、研究压缩、引用来源、token 超限处理 |
-| 阶段 4（5-7 天） | 高级功能 | MCP 工具集成、多搜索 API、评估系统、部署上线 |
+| 阶段 2（2-3 天） | 加入多 Agent | 主管子图 + 并行研究员 + think_tool                           |
+| 阶段 3（3-5 天） | 完善功能     | 用户澄清流程、研究压缩、引用来源、token 超限处理             |
+| 阶段 4（5-7 天） | 高级功能     | MCP 工具集成、多搜索 API、评估系统、部署上线                 |
 
 ### 技术栈学习资源
 
-| 技术 | 学习资源 |
-|------|----------|
-| LangGraph | [官方文档](https://langchain-ai.github.io/langgraph/) + [本项目配套课程](https://academy.langchain.com/courses/deep-research-with-langgraph) |
-| LangChain | [Python LangChain 文档](https://python.langchain.com/docs/) |
-| Pydantic | [Pydantic V2 文档](https://docs.pydantic.dev/latest/) |
-| asyncio | [Python 异步编程官方教程](https://docs.python.org/3/library/asyncio.html) |
-| Tavily API | [Tavily 文档](https://docs.tavily.com/) |
+| 技术       | 学习资源                                                                                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| LangGraph  | [官方文档](https://langchain-ai.github.io/langgraph/) + [本项目配套课程](https://academy.langchain.com/courses/deep-research-with-langgraph) |
+| LangChain  | [Python LangChain 文档](https://python.langchain.com/docs/)                                                                                  |
+| Pydantic   | [Pydantic V2 文档](https://docs.pydantic.dev/latest/)                                                                                        |
+| asyncio    | [Python 异步编程官方教程](https://docs.python.org/3/library/asyncio.html)                                                                    |
+| Tavily API | [Tavily 文档](https://docs.tavily.com/)                                                                                                      |
 
 ## ❓ 常见问题
 

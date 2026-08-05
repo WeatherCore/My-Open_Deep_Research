@@ -203,16 +203,16 @@ open_deep_research/
 
 **关键数据结构**：
 
-| 类名 | 用途 |
-|------|------|
-| `ConductResearch` | 主管用来分配研究任务的工具定义 |
-| `ResearchComplete` | 标记研究完成的信号工具 |
-| `Summary` | 搜索结果摘要 |
-| `ClarifyWithUser` | 用户澄清请求的结构化输出 |
-| `ResearchQuestion` | 研究问题的结构化输出 |
-| `AgentState` | 主图状态（消息、研究简报、笔记、最终报告） |
-| `SupervisorState` | 主管状态（消息、研究简报、迭代次数） |
-| `ResearcherState` | 研究员状态（消息、工具调用次数、研究主题） |
+| 类名               | 用途                                       |
+| ------------------ | ------------------------------------------ |
+| `ConductResearch`  | 主管用来分配研究任务的工具定义             |
+| `ResearchComplete` | 标记研究完成的信号工具                     |
+| `Summary`          | 搜索结果摘要                               |
+| `ClarifyWithUser`  | 用户澄清请求的结构化输出                   |
+| `ResearchQuestion` | 研究问题的结构化输出                       |
+| `AgentState`       | 主图状态（消息、研究简报、笔记、最终报告） |
+| `SupervisorState`  | 主管状态（消息、研究简报、迭代次数）       |
+| `ResearcherState`  | 研究员状态（消息、工具调用次数、研究主题） |
 
 **要点**：
 - `override_reducer` 是一个自定义的状态合并函数，允许在需要时覆盖而非追加状态值
@@ -224,18 +224,18 @@ open_deep_research/
 
 **核心配置项**：
 
-| 配置项 | 默认值 | 说明 |
-|--------|--------|------|
-| `search_api` | `tavily` | 搜索 API（Tavily/OpenAI/Anthropic/None） |
-| `research_model` | `openai:gpt-4.1` | 执行研究的模型 |
-| `summarization_model` | `openai:gpt-4.1-mini` | 摘要模型 |
-| `compression_model` | `openai:gpt-4.1` | 压缩模型 |
-| `final_report_model` | `openai:gpt-4.1` | 写报告的模型 |
-| `max_researcher_iterations` | 6 | 主管最大迭代次数 |
-| `max_react_tool_calls` | 10 | 研究员最大工具调用次数 |
-| `max_concurrent_research_units` | 5 | 最大并行研究员数 |
-| `max_content_length` | 50000 | 网页内容最大字符数 |
-| `mcp_config` | None | MCP 服务器配置 |
+| 配置项                          | 默认值                | 说明                                     |
+| ------------------------------- | --------------------- | ---------------------------------------- |
+| `search_api`                    | `tavily`              | 搜索 API（Tavily/OpenAI/Anthropic/None） |
+| `research_model`                | `openai:gpt-4.1`      | 执行研究的模型                           |
+| `summarization_model`           | `openai:gpt-4.1-mini` | 摘要模型                                 |
+| `compression_model`             | `openai:gpt-4.1`      | 压缩模型                                 |
+| `final_report_model`            | `openai:gpt-4.1`      | 写报告的模型                             |
+| `max_researcher_iterations`     | 6                     | 主管最大迭代次数                         |
+| `max_react_tool_calls`          | 10                    | 研究员最大工具调用次数                   |
+| `max_concurrent_research_units` | 5                     | 最大并行研究员数                         |
+| `max_content_length`            | 50000                 | 网页内容最大字符数                       |
+| `mcp_config`                    | None                  | MCP 服务器配置                           |
 
 **要点**：
 - 每个字段都有 `x_oap_ui_config` 元数据，用于在 LangGraph Studio UI 中自动生成配置界面
@@ -247,15 +247,15 @@ open_deep_research/
 
 **提示词清单**：
 
-| 提示词名 | 使用位置 | 作用 |
-|----------|----------|------|
-| `clarify_with_user_instructions` | clarify_with_user | 判断是否需要向用户提问 |
-| `transform_messages_into_research_topic_prompt` | write_research_brief | 将对话转为研究简报 |
-| `lead_researcher_prompt` | supervisor | 指导主管如何分配任务 |
-| `research_system_prompt` | researcher | 指导研究员如何搜索 |
-| `compress_research_system_prompt` | compress_research | 指导如何压缩研究结果 |
-| `final_report_generation_prompt` | final_report_generation | 指导如何生成最终报告 |
-| `summarize_webpage_prompt` | utils.py | 指导如何摘要网页 |
+| 提示词名                                        | 使用位置                | 作用                   |
+| ----------------------------------------------- | ----------------------- | ---------------------- |
+| `clarify_with_user_instructions`                | clarify_with_user       | 判断是否需要向用户提问 |
+| `transform_messages_into_research_topic_prompt` | write_research_brief    | 将对话转为研究简报     |
+| `lead_researcher_prompt`                        | supervisor              | 指导主管如何分配任务   |
+| `research_system_prompt`                        | researcher              | 指导研究员如何搜索     |
+| `compress_research_system_prompt`               | compress_research       | 指导如何压缩研究结果   |
+| `final_report_generation_prompt`                | final_report_generation | 指导如何生成最终报告   |
+| `summarize_webpage_prompt`                      | utils.py                | 指导如何摘要网页       |
 
 **要点**：
 - 提示词中大量使用 XML 标签（如 `<Task>`、`<Instructions>`）来组织结构
@@ -298,16 +298,16 @@ open_deep_research/
 
 **核心函数说明**：
 
-| 函数 | 行号 | 功能 |
-|------|------|------|
-| `clarify_with_user` | ~60 | 用结构化输出判断是否需要澄清 |
-| `write_research_brief` | ~118 | 生成研究简报，初始化主管 |
-| `supervisor` | ~178 | 主管 LLM 决策（调工具或完成） |
-| `supervisor_tools` | ~225 | 执行主管的工具调用（含并行研究员） |
-| `researcher` | ~365 | 研究员 LLM 搜索决策 |
-| `researcher_tools` | ~435 | 执行搜索工具 |
-| `compress_research` | ~511 | 压缩和整理研究发现 |
-| `final_report_generation` | ~607 | 生成最终 Markdown 报告 |
+| 函数                      | 行号 | 功能                               |
+| ------------------------- | ---- | ---------------------------------- |
+| `clarify_with_user`       | ~60  | 用结构化输出判断是否需要澄清       |
+| `write_research_brief`    | ~118 | 生成研究简报，初始化主管           |
+| `supervisor`              | ~178 | 主管 LLM 决策（调工具或完成）      |
+| `supervisor_tools`        | ~225 | 执行主管的工具调用（含并行研究员） |
+| `researcher`              | ~365 | 研究员 LLM 搜索决策                |
+| `researcher_tools`        | ~435 | 执行搜索工具                       |
+| `compress_research`       | ~511 | 压缩和整理研究发现                 |
+| `final_report_generation` | ~607 | 生成最终 Markdown 报告             |
 
 **关键设计点**：
 - 第 295-305 行：`asyncio.gather` 实现多个研究员并行搜索
@@ -320,15 +320,15 @@ open_deep_research/
 
 **核心功能模块**：
 
-| 模块 | 行号 | 功能 |
-|------|------|------|
-| Tavily 搜索 | ~39-173 | 异步搜索 + 网页摘要 |
-| think_tool | ~218-244 | 策略反思工具 |
-| MCP 工具加载 | ~449-524 | 连接 MCP 服务器并加载工具 |
-| 搜索工具配置 | ~531-567 | 根据 API 类型返回搜索工具 |
-| Token 限制检测 | ~665-785 | 检测各模型的 token 超限错误 |
-| 模型 Token 限制表 | ~788-829 | 各模型的上下文窗口大小 |
-| API 密钥管理 | ~892-925 | 从环境变量或配置获取密钥 |
+| 模块              | 行号     | 功能                        |
+| ----------------- | -------- | --------------------------- |
+| Tavily 搜索       | ~39-173  | 异步搜索 + 网页摘要         |
+| think_tool        | ~218-244 | 策略反思工具                |
+| MCP 工具加载      | ~449-524 | 连接 MCP 服务器并加载工具   |
+| 搜索工具配置      | ~531-567 | 根据 API 类型返回搜索工具   |
+| Token 限制检测    | ~665-785 | 检测各模型的 token 超限错误 |
+| 模型 Token 限制表 | ~788-829 | 各模型的上下文窗口大小      |
+| API 密钥管理      | ~892-925 | 从环境变量或配置获取密钥    |
 
 **要点**：
 - `tavily_search` 工具会自动对搜索结果进行 AI 摘要（使用 `summarization_model`）
@@ -449,7 +449,8 @@ cp .env.example .env
 ### 8.2 启动开发服务器
 
 ```bash
-uvx --refresh --from "langgraph-cli[inmem]" --with-editable . --python 3.11 langgraph dev --allow-blocking
+$env:PYTHONUTF8=1; 
+.venv\Scripts\langgraph dev --allow-blocking
 ```
 
 启动后：
@@ -504,13 +505,13 @@ python tests/run_evaluate.py
 
 ### 9.3 关键技术栈学习资源
 
-| 技术 | 学习资源 |
-|------|----------|
-| LangGraph | [官方文档](https://langchain-ai.github.io/langgraph/) + [本项目配套课程](https://academy.langchain.com/courses/deep-research-with-langgraph) |
-| LangChain | [Python LangChain 文档](https://python.langchain.com/docs/) |
-| Pydantic | [Pydantic V2 文档](https://docs.pydantic.dev/latest/) |
-| asyncio | [Python 异步编程官方教程](https://docs.python.org/3/library/asyncio.html) |
-| Tavily API | [Tavily 文档](https://docs.tavily.com/) |
+| 技术       | 学习资源                                                                                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| LangGraph  | [官方文档](https://langchain-ai.github.io/langgraph/) + [本项目配套课程](https://academy.langchain.com/courses/deep-research-with-langgraph) |
+| LangChain  | [Python LangChain 文档](https://python.langchain.com/docs/)                                                                                  |
+| Pydantic   | [Pydantic V2 文档](https://docs.pydantic.dev/latest/)                                                                                        |
+| asyncio    | [Python 异步编程官方教程](https://docs.python.org/3/library/asyncio.html)                                                                    |
+| Tavily API | [Tavily 文档](https://docs.tavily.com/)                                                                                                      |
 
 ---
 
@@ -569,20 +570,20 @@ GOOGLE_API_KEY=xxx             # Google 模型密钥
 
 ## 附录：关键术语对照表
 
-| 英文 | 中文 | 说明 |
-|------|------|------|
-| Deep Research | 深度研究 | 自动化多步骤研究 |
-| Agent | 智能体/代理 | 能使用工具的 AI 系统 |
-| Supervisor | 主管 | 管理研究任务分配的 Agent |
-| Researcher | 研究员 | 执行具体搜索的子 Agent |
-| State | 状态 | 在节点间传递的共享数据 |
-| Node | 节点 | 工作流图中的一步 |
-| Edge | 边 | 节点间的连接 |
-| Subgraph | 子图 | 嵌套在主图中的独立工作流 |
-| Tool Calling | 工具调用 | LLM 决定调用外部工具 |
-| Structured Output | 结构化输出 | LLM 输出符合特定格式的数据 |
-| MCP | 模型上下文协议 | 连接外部工具和服务的标准协议 |
-| ReAct | 推理-行动循环 | 交替思考和行动的模式 |
-| Token Limit | Token 限制 | 模型上下文窗口大小限制 |
-| Compression | 压缩 | 将研究发现精简为更紧凑的格式 |
-| LangGraph Studio | LangGraph 工作台 | 可视化的 Agent 调试界面 |
+| 英文              | 中文             | 说明                         |
+| ----------------- | ---------------- | ---------------------------- |
+| Deep Research     | 深度研究         | 自动化多步骤研究             |
+| Agent             | 智能体/代理      | 能使用工具的 AI 系统         |
+| Supervisor        | 主管             | 管理研究任务分配的 Agent     |
+| Researcher        | 研究员           | 执行具体搜索的子 Agent       |
+| State             | 状态             | 在节点间传递的共享数据       |
+| Node              | 节点             | 工作流图中的一步             |
+| Edge              | 边               | 节点间的连接                 |
+| Subgraph          | 子图             | 嵌套在主图中的独立工作流     |
+| Tool Calling      | 工具调用         | LLM 决定调用外部工具         |
+| Structured Output | 结构化输出       | LLM 输出符合特定格式的数据   |
+| MCP               | 模型上下文协议   | 连接外部工具和服务的标准协议 |
+| ReAct             | 推理-行动循环    | 交替思考和行动的模式         |
+| Token Limit       | Token 限制       | 模型上下文窗口大小限制       |
+| Compression       | 压缩             | 将研究发现精简为更紧凑的格式 |
+| LangGraph Studio  | LangGraph 工作台 | 可视化的 Agent 调试界面      |
