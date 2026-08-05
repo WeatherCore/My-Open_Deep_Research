@@ -3,6 +3,8 @@
 
 import asyncio
 from typing import Literal
+import logging
+logger = logging.getLogger(__name__)
 
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import (
@@ -411,7 +413,7 @@ async def supervisor_tools(state: SupervisorState, config: RunnableConfig) -> Co
                 
         except Exception as e:
             # 一旦执行子调研时触发 token 超限，主动终止整个调研循环，不再继续迭代，直接进入报告阶段（使用已收集到的素材生成报告）
-            if is_token_limit_exceeded(e, configurable.research_model) or True:
+            if is_token_limit_exceeded(e, configurable.research_model):
                 return Command(
                     goto=END,
                     update={
@@ -419,6 +421,14 @@ async def supervisor_tools(state: SupervisorState, config: RunnableConfig) -> Co
                         "research_brief": state.get("research_brief", "")
                     }
                 )
+            # 其他异常（限流/网络等）：记日志，把错误回给主管继续，而不是静默终止
+            logger.exception("research delegation failed: %s", e)
+            for tool_call in conduct_research_calls:
+                all_tool_messages.append(ToolMessage(
+                    content=f"Error running research: {e}",
+                    name="ConductResearch",
+                    tool_call_id=tool_call["id"]
+                ))
     
     # 把所有工具执行产生的ToolMessage写入状态，跳转回 supervisor 主管节点，开启新一轮决策循环
     update_payload["supervisor_messages"] = all_tool_messages
