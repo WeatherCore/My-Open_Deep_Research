@@ -1004,8 +1004,7 @@ MODEL_TOKEN_LIMITS = {
     "dashscope:qwen-plus": 128000,
     "dashscope:qwen-max": 128000,
     "dashscope:qwen3.7-plus-2026-05-26": 131072,
-    "deepseek:deepseek-v4-pro": 1000000,
-    "deepseek:deepseek-v4-flash": 1000000,
+    "deepseek:deepseek-chat": 65536,
 }
 
 # 根据模型标识字符串，查询该模型支持的最大上下文token上限。
