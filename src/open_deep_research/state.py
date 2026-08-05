@@ -13,6 +13,7 @@ from typing_extensions import TypedDict
 # Structured Outputs
 # Pydantic 模型 → 给 LLM 结构化输出（强制模型输出规范 JSON，工具调用、需求澄清、研究指令）
 ###################
+
 # ConductResearch（执行研究）：当 Agent 决定“我要查资料”时，它必须调用这个模型，主管 Agent 下发任务时，强制输出调研子课题，主管拆分大需求，生成多个子调研主题，用这个格式传递给研究员子 Agent
 class ConductResearch(BaseModel):
     """Call this tool to conduct research on a specific topic."""
@@ -20,6 +21,7 @@ class ConductResearch(BaseModel):
         description="The topic to research. Should be a single topic, and should be described in high detail (at least a paragraph).",
     )
 
+# 在utils.py中被定义为一个tool
 # ResearchComplete（研究完成）：这是一个空模型（没有字段）。它在编程中叫哨兵（Sentinel），相当于 Agent 举起一面旗子喊：“报告长官，我的所有检索任务都做完了，可以写总结了！”系统看到这个类被调用，就知道信息搜集足够，可以停止循环检索，进入写报告阶段
 class ResearchComplete(BaseModel):
     """Call this tool to indicate that the research is complete."""
@@ -64,6 +66,7 @@ class ResearchQuestion(BaseModel):
 # 核心黑科技：它是整个状态更新的“交通规则”
 def override_reducer(current_value, new_value):
     """Reducer function that allows overriding values in state."""
+    
     if isinstance(new_value, dict) and new_value.get("type") == "override":
         return new_value.get("value", new_value)  # 强制覆盖
     else:
