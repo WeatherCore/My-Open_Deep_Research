@@ -260,5 +260,13 @@ export const DEFAULT_CONFIG = {
   max_concurrent_research_units: 5,
   max_researcher_iterations: 6,
   max_react_tool_calls: 10,
+  summarization_model: "deepseek:deepseek-chat",
   research_model: "deepseek:deepseek-chat",
+  compression_model: "deepseek:deepseek-chat",
+  final_report_model: "deepseek:deepseek-chat",
+  summarization_model_max_tokens: 8192,
+  research_model_max_tokens: 10000,
+  compression_model_max_tokens: 8192,
+  final_report_model_max_tokens: 10000,
+  max_content_length: 50000,
 };
